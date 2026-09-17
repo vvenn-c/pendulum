@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "global.hpp"
+#include "pendulum.hpp"
 
 int main() {
 
@@ -17,12 +18,12 @@ int main() {
     settings.antiAliasingLevel = 8;
     sf::RenderWindow window(
         sf::VideoMode({WIDTH, HEIGHT}),
-        "sfml project template", 
+        "pendulum", 
         sf::Style::Default, 
         sf::State::Windowed,
         settings
     );
-    window.setVerticalSyncEnabled(true);
+    window.setVerticalSyncEnabled(false);
 
     const sf::Font font("fonts/Consolas.ttf");
 
@@ -36,15 +37,21 @@ int main() {
     deltaTimeText.setFillColor(sf::Color(255, 255, 255, 100));
     deltaTimeText.setPosition({10, 30});
 
+    sf::Vector2f anchorPos = {WIDTH / 2, (HEIGHT / 2) - 100};
+    float length = 250;
+    float mass = 10;
+
+    Pendulum pendulum(anchorPos, length, mass);
+
     int frameCounter = 0;
-    const int updateRate = 72;
+    const int updateEvery = 2500;
 
     while (window.isOpen()) {
 
         float dt = clock.restart().asSeconds();
 
         frameCounter++;
-        if (frameCounter >= updateRate) {
+        if (frameCounter >= updateEvery) {
 
             frameCounter = 0;
 
@@ -60,6 +67,8 @@ int main() {
 
         }
 
+        if (dt > 0.002) dt = 0.002;
+
         while (const std::optional event = window.pollEvent()) {
 
             if (event->is<sf::Event::Closed>())
@@ -67,7 +76,11 @@ int main() {
 
         }
 
+        pendulum.update(dt);
+
         window.clear(sf::Color(20, 20, 20));
+
+            pendulum.render(&window);
             
             window.draw(fpsText);
             window.draw(deltaTimeText);
